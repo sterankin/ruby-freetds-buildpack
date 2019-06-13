@@ -10,3 +10,4 @@ tmp/
 /ruby_buildpack-*.zip
 /.bin/
 /pkg/
+/ruby_freetds_buildpack*.zip
