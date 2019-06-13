@@ -3,6 +3,8 @@ language: ruby
 default_versions:
 - name: ruby
   version: 2.4.x
+- name: freetds
+  version: 1.1.6
 pre_package: scripts/build.sh
 url_to_dependency_map: []
 dependency_deprecation_dates:
