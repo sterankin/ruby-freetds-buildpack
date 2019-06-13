@@ -14,3 +14,6 @@ require (
 	golang.org/x/sys v0.0.0-20190425145619-16072639606e // indirect
 	golang.org/x/text v0.3.1 // indirect
 )
+
+// replace github.com/cloudfoundry/libbuildpack => github.com/drnic/libbuildpack cutlass-skip-tls-verify
+replace github.com/cloudfoundry/libbuildpack => github.com/drnic/libbuildpack v0.0.0-20190606002122-7960f8cf829c
