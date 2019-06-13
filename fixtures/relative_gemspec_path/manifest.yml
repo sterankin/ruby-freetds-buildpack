@@ -1,6 +1,0 @@
----
-applications:
-- name: app_with_relative_gemspec_path
-  memory: 256M
-  instances: 1
-  path: .
