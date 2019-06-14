@@ -10,7 +10,7 @@ import (
 	"path/filepath"
 	"time"
 
-	"github.com/cloudfoundry/libbuildpack"
+	"github.com/blang/semver"
 	"github.com/cloudfoundry/libbuildpack/cutlass"
 
 	. "github.com/onsi/ginkgo"
@@ -26,7 +26,7 @@ var packagedBuildpack cutlass.VersionedBuildpackPackage
 func init() {
 	flag.StringVar(&buildpackVersion, "version", "", "version to use (builds if empty)")
 	flag.BoolVar(&cutlass.Cached, "cached", true, "cached buildpack")
-	flag.StringVar(&cutlass.DefaultMemory, "memory", "256M", "default memory for pushed apps")
+	flag.StringVar(&cutlass.DefaultMemory, "memory", "128M", "default memory for pushed apps")
 	flag.StringVar(&cutlass.DefaultDisk, "disk", "384M", "default disk for pushed apps")
 	flag.Parse()
 }
@@ -34,7 +34,7 @@ func init() {
 var _ = SynchronizedBeforeSuite(func() []byte {
 	// Run once
 	if buildpackVersion == "" {
-		packagedBuildpack, err := cutlass.PackageUniquelyVersionedBuildpack(os.Getenv("CF_STACK"), ApiHasStackAssociation())
+		packagedBuildpack, err := cutlass.PackageUniquelyVersionedBuildpack("", false) // stackAssociationSupported=false denotes any stack. Set to true and specific stack (e.g. "cflinuxfs2" if desired)
 		Expect(err).NotTo(HaveOccurred())
 
 		data, err := json.Marshal(packagedBuildpack)
@@ -56,18 +56,15 @@ var _ = SynchronizedBeforeSuite(func() []byte {
 	Expect(err).NotTo(HaveOccurred())
 
 	Expect(cutlass.CopyCfHome()).To(Succeed())
-
 	cutlass.SeedRandom()
 	cutlass.DefaultStdoutStderr = GinkgoWriter
-
-	SetDefaultEventuallyTimeout(10 * time.Second)
 })
 
 var _ = SynchronizedAfterSuite(func() {
 	// Run on all nodes
 }, func() {
 	// Run once
-	cutlass.RemovePackagedBuildpack(packagedBuildpack)
+	Expect(cutlass.RemovePackagedBuildpack(packagedBuildpack)).To(Succeed())
 	Expect(cutlass.DeleteOrphanedRoutes()).To(Succeed())
 })
 
@@ -78,65 +75,42 @@ func TestIntegration(t *testing.T) {
 
 func PushAppAndConfirm(app *cutlass.App) {
 	Expect(app.Push()).To(Succeed())
-	Eventually(app.InstanceStates, 20*time.Second).Should(Equal([]string{"RUNNING"}))
+	Eventually(func() ([]string, error) { return app.InstanceStates() }, 20*time.Second).Should(Equal([]string{"RUNNING"}))
 	Expect(app.ConfirmBuildpack(buildpackVersion)).To(Succeed())
 }
 
 func Restart(app *cutlass.App) {
 	Expect(app.Restart()).To(Succeed())
-	Eventually(app.InstanceStates, 20*time.Second).Should(Equal([]string{"RUNNING"}))
+	Eventually(func() ([]string, error) { return app.InstanceStates() }, 20*time.Second).Should(Equal([]string{"RUNNING"}))
+}
+
+func ApiGreaterThan(version string) bool {
+	apiVersionString, err := cutlass.ApiVersion()
+	Expect(err).To(BeNil())
+	apiVersion, err := semver.Make(apiVersionString)
+	Expect(err).To(BeNil())
+	reqVersion, err := semver.ParseRange(">= " + version)
+	Expect(err).To(BeNil())
+	return reqVersion(apiVersion)
 }
 
 func ApiHasTask() bool {
-	supported, err := cutlass.ApiGreaterThan("2.75.0")
-	Expect(err).NotTo(HaveOccurred())
-	return supported
+	return ApiGreaterThan("2.75.0")
 }
-
 func ApiHasMultiBuildpack() bool {
-	supported, err := cutlass.ApiGreaterThan("2.90.0")
-	Expect(err).NotTo(HaveOccurred())
-	return supported
+	return ApiGreaterThan("2.90.0")
 }
-
-func ApiHasStackAssociation() bool {
-	supported, err := cutlass.ApiGreaterThan("2.113.0")
-	Expect(err).NotTo(HaveOccurred())
-	return supported
-}
-
-func SkipUnlessUncached() {
-	if cutlass.Cached {
-		Skip("Running cached tests")
-	}
-}
-
-func SkipUnlessCached() {
-	if !cutlass.Cached {
-		Skip("Running uncached tests")
-	}
-}
-
-func DestroyApp(app *cutlass.App) *cutlass.App {
-	if app != nil {
-		app.Destroy()
-	}
-	return nil
-}
-
-func DefaultVersion(name string) string {
-	m := &libbuildpack.Manifest{}
-	err := (&libbuildpack.YAML{}).Load(filepath.Join(bpDir, "manifest.yml"), m)
-	Expect(err).ToNot(HaveOccurred())
-	dep, err := m.DefaultVersion(name)
-	Expect(err).ToNot(HaveOccurred())
-	Expect(dep.Version).ToNot(Equal(""))
-	return dep.Version
+func ApiHasSidecar() bool {
+	return ApiGreaterThan("2.134.0")
 }
 
 func AssertUsesProxyDuringStagingIfPresent(fixtureName string) {
 	Context("with an uncached buildpack", func() {
-		BeforeEach(SkipUnlessUncached)
+		BeforeEach(func() {
+			if cutlass.Cached {
+				Skip("Running cached tests")
+			}
+		})
 
 		It("uses a proxy during staging if present", func() {
 			proxy, err := cutlass.NewProxy()
@@ -149,14 +123,15 @@ func AssertUsesProxyDuringStagingIfPresent(fixtureName string) {
 			Expect(err).To(BeNil())
 			defer os.Remove(bpFile)
 
-			traffic, _, _, err := cutlass.InternetTraffic(
+			traffic, built, logs, err := cutlass.InternetTraffic(
 				bpDir,
 				filepath.Join("fixtures", fixtureName),
 				bpFile,
 				[]string{"HTTP_PROXY=" + proxy.URL, "HTTPS_PROXY=" + proxy.URL},
 			)
 			Expect(err).To(BeNil())
-			// Expect(built).To(BeTrue())
+			Expect(built).To(BeTrue())
+			Expect(logs).To(BeEmpty())
 
 			destUrl, err := url.Parse(proxy.URL)
 			Expect(err).To(BeNil())
@@ -170,7 +145,9 @@ func AssertUsesProxyDuringStagingIfPresent(fixtureName string) {
 
 func AssertNoInternetTraffic(fixtureName string) {
 	It("has no traffic", func() {
-		SkipUnlessCached()
+		if !cutlass.Cached {
+			Skip("Running uncached tests")
+		}
 
 		bpFile := filepath.Join(bpDir, buildpackVersion+"tmp")
 		cmd := exec.Command("cp", packagedBuildpack.File, bpFile)
@@ -178,14 +155,15 @@ func AssertNoInternetTraffic(fixtureName string) {
 		Expect(err).To(BeNil())
 		defer os.Remove(bpFile)
 
-		traffic, _, _, err := cutlass.InternetTraffic(
+		traffic, built, logs, err := cutlass.InternetTraffic(
 			bpDir,
 			filepath.Join("fixtures", fixtureName),
 			bpFile,
 			[]string{},
 		)
 		Expect(err).To(BeNil())
-		// Expect(built).To(BeTrue())
+		Expect(built).To(BeTrue())
 		Expect(traffic).To(BeEmpty())
+		Expect(logs).To(BeEmpty())
 	})
 }
