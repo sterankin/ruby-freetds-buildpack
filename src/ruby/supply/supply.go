@@ -632,6 +632,8 @@ func (s *Supplier) InstallGems() error {
 
 	env := os.Environ()
 	env = append(env, "NOKOGIRI_USE_SYSTEM_LIBRARIES=true")
+	freeTDSInstallDir := filepath.Join(s.Stager.DepDir(), "freetds")
+	env = append(env, "FREETDS_DIR="+freeTDSInstallDir)
 
 	cmd := exec.Command("bundle", args...)
 	cmd.Dir = tempDir
