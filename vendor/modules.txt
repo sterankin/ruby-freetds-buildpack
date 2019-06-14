@@ -2,7 +2,7 @@
 github.com/Masterminds/semver
 # github.com/blang/semver v3.5.1+incompatible
 github.com/blang/semver
-# github.com/cloudfoundry/libbuildpack v0.0.0-20190528004455-15191cf91ae2
+# github.com/cloudfoundry/libbuildpack v0.0.0-00010101000000-000000000000 => github.com/drnic/libbuildpack v0.0.0-20190606002122-7960f8cf829c
 github.com/cloudfoundry/libbuildpack
 github.com/cloudfoundry/libbuildpack/bratshelper
 github.com/cloudfoundry/libbuildpack/cutlass
@@ -41,19 +41,19 @@ github.com/onsi/ginkgo/internal/specrunner
 github.com/onsi/ginkgo/reporters/stenographer/support/go-isatty
 # github.com/onsi/gomega v1.4.3
 github.com/onsi/gomega
-github.com/onsi/gomega/format
-github.com/onsi/gomega/gexec
-github.com/onsi/gomega/types
 github.com/onsi/gomega/internal/assertion
 github.com/onsi/gomega/internal/asyncassertion
 github.com/onsi/gomega/internal/testingtsupport
 github.com/onsi/gomega/matchers
-github.com/onsi/gomega/gbytes
+github.com/onsi/gomega/types
 github.com/onsi/gomega/internal/oraclematcher
+github.com/onsi/gomega/format
 github.com/onsi/gomega/matchers/support/goraph/bipartitegraph
 github.com/onsi/gomega/matchers/support/goraph/edge
 github.com/onsi/gomega/matchers/support/goraph/node
 github.com/onsi/gomega/matchers/support/goraph/util
+# github.com/pkg/errors v0.8.1
+github.com/pkg/errors
 # github.com/tidwall/gjson v1.1.3
 github.com/tidwall/gjson
 # github.com/tidwall/match v1.0.1
