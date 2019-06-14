@@ -41,38 +41,6 @@ dependencies:
   - cflinuxfs3
   source: http://github.com/bundler/bundler/tree/v2.0.1
   source_sha256: 1b572bb0de581d5315060b967303e56d77d7e6b066f2e4f7de8d89151acb9eaf
-- name: jruby
-  version: 9.1.17.0
-  uri: https://buildpacks.cloudfoundry.org/dependencies/jruby/jruby-9.1.17.0_ruby-2.3-linux-x64-cflinuxfs2-32f807c6.tgz
-  sha256: 32f807c61826df51824e954408ee1c9961879437aded976d6af4168fba0a673d
-  cf_stacks:
-  - cflinuxfs2
-  source: https://s3.amazonaws.com/jruby.org/downloads/9.1.17.0/jruby-src-9.1.17.0.tar.gz
-  source_sha256: b66d7c14f85075afdabb5ebf5950804c5a5d5c1d05ab833f580f04ee709b5773
-- name: jruby
-  version: 9.1.17.0
-  uri: https://buildpacks.cloudfoundry.org/dependencies/jruby/jruby-9.1.17.0_ruby-2.3-linux-x64-cflinuxfs3-bc4ef4d0.tgz
-  sha256: bc4ef4d0a7a8b19749f2baf39ca9e292b0338ac52b8a033ce8ab086dab804f9c
-  cf_stacks:
-  - cflinuxfs3
-  source: https://s3.amazonaws.com/jruby.org/downloads/9.1.17.0/jruby-src-9.1.17.0.tar.gz
-  source_sha256: b66d7c14f85075afdabb5ebf5950804c5a5d5c1d05ab833f580f04ee709b5773
-- name: jruby
-  version: 9.2.7.0
-  uri: https://buildpacks.cloudfoundry.org/dependencies/jruby/jruby-9.2.7.0_ruby-2.5-linux-x64-cflinuxfs2-380b491b.tgz
-  sha256: 380b491bb4176dabd0633ac64b23e91803bc8ab01709f8176c2815f5207b171a
-  cf_stacks:
-  - cflinuxfs2
-  source: https://s3.amazonaws.com/jruby.org/downloads/9.2.7.0/jruby-src-9.2.7.0.tar.gz
-  source_sha256: fadd9437cbc950e5ae96dc3e7f1558480c071837a2ea58887800f9feb6d37e6c
-- name: jruby
-  version: 9.2.7.0
-  uri: https://buildpacks.cloudfoundry.org/dependencies/jruby/jruby-9.2.7.0_ruby-2.5-linux-x64-cflinuxfs3-f748fe82.tgz
-  sha256: f748fe82eadd489ccd220b90dc42485d7302e08659d5ccda2758e85f59fa9ab3
-  cf_stacks:
-  - cflinuxfs3
-  source: https://s3.amazonaws.com/jruby.org/downloads/9.2.7.0/jruby-src-9.2.7.0.tar.gz
-  source_sha256: fadd9437cbc950e5ae96dc3e7f1558480c071837a2ea58887800f9feb6d37e6c
 - name: node
   version: 10.15.0
   uri: https://buildpacks.cloudfoundry.org/dependencies/node/node-10.15.0-linux-x64-cflinuxfs2-d1a7fed0.tgz
