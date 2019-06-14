@@ -3,7 +3,8 @@ module github.com/cloudfoundry/ruby-buildpack
 require (
 	github.com/Masterminds/semver v1.4.2
 	github.com/blang/semver v3.5.1+incompatible
-	github.com/cloudfoundry/libbuildpack v0.0.0-20190528004455-15191cf91ae2
+	github.com/cloudfoundry/libbuildpack v0.0.0-00010101000000-000000000000
+	// github.com/cloudfoundry/libbuildpack v0.0.0-20190528004455-15191cf91ae2
 	github.com/golang/mock v1.3.1
 	github.com/golang/protobuf v1.3.1 // indirect
 	github.com/kr/text v0.1.0
@@ -14,3 +15,6 @@ require (
 	golang.org/x/sys v0.0.0-20190425145619-16072639606e // indirect
 	golang.org/x/text v0.3.1 // indirect
 )
+
+// replace github.com/cloudfoundry/libbuildpack => github.com/drnic/libbuildpack cutlass-skip-tls-verify
+replace github.com/cloudfoundry/libbuildpack => github.com/drnic/libbuildpack v0.0.0-20190606002122-7960f8cf829c
