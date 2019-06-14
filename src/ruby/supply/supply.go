@@ -89,25 +89,27 @@ func Run(s *Supplier) error {
 	if err != nil {
 		return err
 	}
-	if err := s.Installer.InstallDependency(freetds, s.Stager.DepDir()); err != nil {
+
+	freeTDSInstallDir := filepath.Join(s.Stager.DepDir(), "freetds")
+	if err := s.Installer.InstallDependency(freetds, freeTDSInstallDir); err != nil {
 		return err
 	}
 
 	if err := s.Stager.WriteProfileD("finalize_freetds.sh", `#!/bin/bash
-DEP_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )/.." && pwd )"
-# https://www.freetds.org/faq.html#SYBASE
-export SYBASE=$DEP_DIR
 # https://github.com/rails-sqlserver/tiny_tds/blob/master/ext/tiny_tds/extconf.rb#L38
-export FREETDS_DIR=$DEP_DIR
+export FREETDS_DIR="$( cd /home/vcap/deps/*/freetds && pwd )"
+
+# https://www.freetds.org/faq.html#SYBASE
+export SYBASE=$FREETDS_DIR
+
 # https://github.com/rails-sqlserver/heroku-buildpack-freetds/blob/master/bin/compile#L90
-export LD_LIBRARY_PATH="${DEP_DIR}/lib:${LD_LIBRARY_PATH:-/usr/local/lib}"
-export LD_RUN_PATH="${DEP_DIR}/lib:${LD_RUN_PATH:-/usr/local/lib}"
-export LIBRARY_PATH="${DEP_DIR}/lib:${LIBRARY_PATH:-/usr/local/lib}"
+export LD_LIBRARY_PATH="${FREETDS_DIR}/lib:${LD_LIBRARY_PATH:-/usr/local/lib}"
+export LD_RUN_PATH="${FREETDS_DIR}/lib:${LD_RUN_PATH:-/usr/local/lib}"
+export LIBRARY_PATH="${FREETDS_DIR}/lib:${LIBRARY_PATH:-/usr/local/lib}"
 `); err != nil {
 		s.Log.Error("Unable to write profile.d: %s", err.Error())
 		return err
 	}
-
 
 	s.Log.BeginStep("Supplying Ruby")
 
